@@ -12,5 +12,6 @@ public interface IDAO {
 	public void excluir(EntidadeImpl entidade) throws SQLException;
 	public void ativar(EntidadeImpl entidade) throws SQLException;
 	public List<EntidadeImpl> consultar(EntidadeImpl entidade) throws SQLException;
+	public EntidadeImpl consultarPorId(EntidadeImpl entidade) throws SQLException;
 
 }

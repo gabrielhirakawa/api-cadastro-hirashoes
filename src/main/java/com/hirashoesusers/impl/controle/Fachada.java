@@ -77,8 +77,10 @@ public class Fachada implements IFachada {
 				entidades.add(entidade);
 				resultado.setEntidades(entidades);
 			} catch (SQLException sqlException) {
+				
 				sqlException.printStackTrace();
 				resultado.setMensagem("Nao foi possivel realizar o registro!");
+				return resultado;
 			}
 		} else {
 			resultado.setMensagem(mensagem);
@@ -138,6 +140,29 @@ public class Fachada implements IFachada {
 	public Resultado ativar(EntidadeImpl entidade) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public Resultado consultarPorId(EntidadeImpl entidade) {
+		resultado = new Resultado();
+		String nomeClasse = entidade.getClass().getName();
+		
+		String mensagem = executarRegras(entidade, "CONSULTAR");
+		
+		if(mensagem == null) {
+			IDAO dao = daos.get(nomeClasse);
+			try {
+				entidade = dao.consultarPorId(entidade);
+				List<EntidadeImpl> entidades = new ArrayList<EntidadeImpl>();
+				entidades.add(entidade);
+				resultado.setEntidades(entidades);
+			} catch (SQLException sqlException) {
+				sqlException.printStackTrace();
+				resultado.setMensagem("N�o foi poss�vel realizar o registro!");
+			}
+		} else {
+			resultado.setMensagem(mensagem);
+		}
+		return resultado;
 	}
 
 	@Override

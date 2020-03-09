@@ -13,53 +13,63 @@ import com.hirashoesusers.core.aplicacao.Resultado;
 import com.hirashoesusers.dominio.Cliente;
 import com.hirashoesusers.web.command.AlterarCommand;
 import com.hirashoesusers.web.command.ConsultarCommand;
+import com.hirashoesusers.web.command.ConsultarPorIdCommand;
 import com.hirashoesusers.web.command.DeletarCommand;
 import com.hirashoesusers.web.command.ICommand;
 import com.hirashoesusers.web.command.SalvarCommand;
 
-
 @RestController
-@RequestMapping(value="/clientes")
+@RequestMapping(value = "/clientes")
 public class ClienteResource {
 	ICommand command;
-	
+
 	@CrossOrigin
-	@RequestMapping(method=RequestMethod.GET)
-	public ResponseEntity<Resultado> findAll(){	
+	@RequestMapping(method = RequestMethod.GET)
+	public ResponseEntity<Resultado> findAll() {
 		command = new ConsultarCommand();
 		Resultado resultado = command.execute(new Cliente());
 		return ResponseEntity.ok().body(resultado);
-			
+
 	}
+
 	@CrossOrigin
-	@RequestMapping(method=RequestMethod.POST)
-	public ResponseEntity<Resultado> insert(@RequestBody Cliente body){
+	@RequestMapping(value="/{id}", method = RequestMethod.GET)
+	public ResponseEntity<Resultado> find(@PathVariable Integer id) {
+		Cliente cliente = new Cliente();
+		cliente.setId(id);
+		command = new ConsultarPorIdCommand();
+		Resultado resultado = command.execute(cliente);
+		return ResponseEntity.ok().body(resultado);
+
+	}
+
+	@CrossOrigin
+	@RequestMapping(method = RequestMethod.POST)
+	public ResponseEntity<Resultado> insert(@RequestBody Cliente body) {
 		command = new SalvarCommand();
 		Resultado resultado = command.execute(body);
 		return ResponseEntity.ok().body(resultado);
-			
+
 	}
-	
+
 	@CrossOrigin
-	@RequestMapping(value="/{id}", method=RequestMethod.PUT)
-	public ResponseEntity<Void> update(@RequestBody Cliente cliente, @PathVariable Integer id){
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<Void> update(@RequestBody Cliente cliente, @PathVariable Integer id) {
 		cliente.setId(id);
 		command = new AlterarCommand();
 		Resultado resultado = command.execute(cliente);
 		return ResponseEntity.noContent().build();
 	}
-	
+
 	@CrossOrigin
-	@DeleteMapping(value="/{id}")
-	public ResponseEntity<Resultado> delete(@PathVariable Integer id){
+	@DeleteMapping(value = "/{id}")
+	public ResponseEntity<Resultado> delete(@PathVariable Integer id) {
 		Cliente cliente = new Cliente();
 		cliente.setId(id);
 		command = new DeletarCommand();
 		Resultado resultado = command.execute(cliente);
 		return ResponseEntity.ok().body(resultado);
-			
+
 	}
-	
-	
 
 }

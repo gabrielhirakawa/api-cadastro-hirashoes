@@ -7,8 +7,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.postgresql.util.PSQLException;
+
 import com.hirashoesusers.dominio.Cliente;
-import com.hirashoesusers.dominio.Endereco;
 import com.hirashoesusers.dominio.EntidadeImpl;
 
 public class ClienteDAO extends AbstractJdbcDAO {
@@ -40,14 +41,63 @@ public class ClienteDAO extends AbstractJdbcDAO {
 			if (rs.next()) {
 				cliente.setId(rs.getInt(1));
 			}
-					
+
 			TelefoneDAO tel = new TelefoneDAO();
 			tel.salvar(cliente);
 			EnderecoDAO end = new EnderecoDAO();
 			end.salvar(cliente);
 
+		} catch (PSQLException e) {
+			try {
+				connection.setAutoCommit(false);
+				connection.rollback();
+			} catch (PSQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		} finally {
+			try {
+				pst.close();
+				connection.close();
+			} catch (PSQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	@Override
+	public void alterar(EntidadeImpl entidade) {
+		openConnection();
+		PreparedStatement pst = null;
+		Cliente cliente = (Cliente) entidade;
+
+		try {
+			StringBuilder sql = new StringBuilder();
+
+			sql.append("UPDATE clientes SET nome=?, sobrenome=?, cpf=?,");
+			sql.append("email=?, password=?");
+			sql.append("WHERE id=?");
+
+			pst = connection.prepareStatement(sql.toString());
+
+			pst.setString(1, cliente.getNome());
+			pst.setString(2, cliente.getSobrenome());
+			pst.setString(3, cliente.getCpf());
+			pst.setString(4, cliente.getEmail());
+			pst.setString(5, cliente.getPassword());
+			pst.setInt(6, cliente.getId());
+
+			pst.execute();
+
+			TelefoneDAO tel = new TelefoneDAO();
+			tel.alterar(cliente);
+			EnderecoDAO end = new EnderecoDAO();
+			end.alterar(cliente);
+
 		} catch (SQLException e) {
 			try {
+				connection.setAutoCommit(false);
 				connection.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
@@ -65,78 +115,32 @@ public class ClienteDAO extends AbstractJdbcDAO {
 	}
 
 	@Override
-	public void alterar(EntidadeImpl entidade) {
-		openConnection();
-		PreparedStatement pst = null;
-		Cliente cliente = (Cliente)entidade;
-		
-		try {			
-			StringBuilder sql = new StringBuilder();
-			
-			sql.append("UPDATE clientes SET nome=?, sobrenome=?, cpf=?,");
-			sql.append("email=?, password=?");
-			sql.append("WHERE id=?");
-					
-			pst = connection.prepareStatement(sql.toString());
-			
-			pst.setString(1, cliente.getNome());
-			pst.setString(2, cliente.getSobrenome());
-			pst.setString(3, cliente.getCpf());
-			pst.setString(4, cliente.getEmail());
-	        pst.setString(5, cliente.getPassword());
-	        pst.setInt(6, cliente.getId());
-	        
-	        pst.execute();
-	        
-	        TelefoneDAO tel = new TelefoneDAO();
-			tel.alterar(cliente);
-			EnderecoDAO end = new EnderecoDAO();
-			end.alterar(cliente);
-	        
-		} catch (SQLException e) {
-			try {
-				connection.rollback();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-			e.printStackTrace();
-		}finally{
-			try {
-				pst.close();
-				connection.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
-
-	@Override
 	public void excluir(EntidadeImpl entidade) {
 		openConnection();
 		PreparedStatement pst = null;
-		Cliente cliente = (Cliente)entidade;
-		
-		try {			
+		Cliente cliente = (Cliente) entidade;
+
+		try {
 			StringBuilder sql = new StringBuilder();
-			
+
 			sql.append("UPDATE clientes SET status='inativo'");
 			sql.append("WHERE id=?");
-					
+
 			pst = connection.prepareStatement(sql.toString());
-	
-	        pst.setInt(1, cliente.getId());
-	        
-	        pst.execute();
-	        
+
+			pst.setInt(1, cliente.getId());
+
+			pst.execute();
+
 		} catch (SQLException e) {
 			try {
+				connection.setAutoCommit(false);
 				connection.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
-		}finally{
+		} finally {
 			try {
 				pst.close();
 				connection.close();
@@ -153,14 +157,44 @@ public class ClienteDAO extends AbstractJdbcDAO {
 
 	}
 
+	public EntidadeImpl consultarPorId(EntidadeImpl entidade) {
+		PreparedStatement pst = null;
+
+		Cliente cliente = (Cliente) entidade;
+		StringBuilder sql = new StringBuilder();
+
+		try {
+			Cliente c = new Cliente();
+			sql.append("SELECT * FROM clientes WHERE id=?");
+			openConnection();
+			
+			pst = connection.prepareStatement(sql.toString());
+			pst.setInt(1, cliente.getId());
+
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+				c.setId(rs.getInt("id"));
+				c.setNome(rs.getString("nome"));
+				c.setSobrenome(rs.getString("sobrenome"));
+				c.setEmail(rs.getString("email"));
+				c.setCpf(rs.getString("cpf"));
+				c.setStatus(rs.getString("status"));
+			}
+			System.out.println("logando objeto"+ c.getNome());
+			return c;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	@Override
 	public List<EntidadeImpl> consultar(EntidadeImpl entidade) {
 		PreparedStatement pst = null;
 
 		Cliente cliente = (Cliente) entidade;
 		StringBuilder sql = new StringBuilder();
-
-		StringBuilder endSql = new StringBuilder();
 
 		sql.append("SELECT * FROM clientes WHERE status='ativo'");
 

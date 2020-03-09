@@ -11,5 +11,6 @@ public interface IFachada {
 	public Resultado ativar(EntidadeImpl entidade);
 	public Resultado consultar(EntidadeImpl entidade);
 	public Resultado visualizar(EntidadeImpl entidade);
+	public Resultado consultarPorId(EntidadeImpl entidade);
 
 }

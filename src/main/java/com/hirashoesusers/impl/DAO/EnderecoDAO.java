@@ -158,4 +158,10 @@ public class EnderecoDAO extends AbstractJdbcDAO {
 		return null;
 	}
 
+	@Override
+	public EntidadeImpl consultarPorId(EntidadeImpl entidade) throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
