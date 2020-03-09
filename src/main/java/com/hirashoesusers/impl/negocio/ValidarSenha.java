@@ -4,17 +4,17 @@ import com.hirashoesusers.core.IStrategy;
 import com.hirashoesusers.dominio.Cliente;
 import com.hirashoesusers.dominio.EntidadeImpl;
 
-public class ValidarDados implements IStrategy {
-
+public class ValidarSenha implements IStrategy {
+	
 	@Override
 	public String processar(EntidadeImpl entidade) {
 		if (entidade instanceof Cliente) {
 			Cliente cliente = (Cliente) entidade;
 			
-			String nome = cliente.getNome();
+			String pass = cliente.getPassword();
 			
-			if (nome == null || nome.trim().equals("")) {
-				return "Campo nome obrigatorio!";
+			if (pass.length() < 6) {
+				return "A senha deve conter pelo menos 6 caracteres!";
 			}
 		} else {
 			return "Deve ser registrado um Cliente!";

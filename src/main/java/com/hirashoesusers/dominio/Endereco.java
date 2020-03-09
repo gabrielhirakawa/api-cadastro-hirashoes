@@ -24,6 +24,10 @@ public class Endereco extends EntidadeImpl {
 		this.pais = pais;
 	}
 	 
+	public Endereco() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public String getRua() {
 		return rua;
 	}

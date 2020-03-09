@@ -15,7 +15,7 @@ public class Cliente extends EntidadeImpl {
 	
 	
 	public Cliente(String nome, String sobrenome, String cpf, String email, String status, String password,
-			List<String> telefones, List<Endereco> enderecos) {
+			List<Telefone> telefones, List<Endereco> enderecos) {
 		super();
 		this.nome = nome;
 		this.sobrenome = sobrenome;
@@ -27,9 +27,19 @@ public class Cliente extends EntidadeImpl {
 		this.enderecos = enderecos;
 	}
 
-	private List<String> telefones = new ArrayList<>();
+	private List<Telefone> telefones = new ArrayList<>();
 	private List<Endereco> enderecos = new ArrayList<>();
 	
+	
+	
+	public List<Telefone> getTelefones() {
+		return telefones;
+	}
+
+	public void setTelefones(List<Telefone> telefones) {
+		this.telefones = telefones;
+	}
+
 	public String getSobrenome() {
 		return sobrenome;
 	}
@@ -82,13 +92,7 @@ public class Cliente extends EntidadeImpl {
 		this.status = status;
 	}
 
-	public List<String> getTelefones() {
-		return telefones;
-	}
 
-	public void setTelefones(List<String> telefones) {
-		this.telefones = telefones;
-	}
 
 	public List<Endereco> getEnderecos() {
 		return enderecos;

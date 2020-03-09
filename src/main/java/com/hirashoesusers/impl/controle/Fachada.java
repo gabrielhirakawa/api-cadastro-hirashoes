@@ -13,7 +13,9 @@ import com.hirashoesusers.core.aplicacao.Resultado;
 import com.hirashoesusers.dominio.Cliente;
 import com.hirashoesusers.dominio.EntidadeImpl;
 import com.hirashoesusers.impl.DAO.ClienteDAO;
+import com.hirashoesusers.impl.negocio.ValidarCPF;
 import com.hirashoesusers.impl.negocio.ValidarDados;
+import com.hirashoesusers.impl.negocio.ValidarSenha;
 
 public class Fachada implements IFachada {
 	
@@ -31,14 +33,21 @@ public class Fachada implements IFachada {
 		daos.put(Cliente.class.getName(), clienteDAO);
 		
 		//instanciando regras
-		ValidarDados vrDadosObrigatoriosCliente = new ValidarDados();
+		ValidarDados vrDados = new ValidarDados();
+		ValidarCPF vrCPF = new ValidarCPF();
+		ValidarSenha vrSenha = new ValidarSenha();
 		
 		// listas para conter regras de negócios do cliente 
 		List<IStrategy> rnsSalvarCliente = new ArrayList<IStrategy>();
 		List<IStrategy> rnsAlterarCliente = new ArrayList<IStrategy>();
 		
-		rnsSalvarCliente.add(vrDadosObrigatoriosCliente);
-		rnsAlterarCliente.add(vrDadosObrigatoriosCliente);
+		rnsSalvarCliente.add(vrDados);
+		rnsSalvarCliente.add(vrCPF);
+		rnsSalvarCliente.add(vrSenha);
+		
+		rnsAlterarCliente.add(vrDados);
+		rnsAlterarCliente.add(vrCPF);
+		rnsAlterarCliente.add(vrSenha);
 		
 		Map<String, List<IStrategy>> rnsCliente = new HashMap<String, List<IStrategy>>();
 		rnsCliente.put("SALVAR", rnsSalvarCliente);
@@ -79,14 +88,50 @@ public class Fachada implements IFachada {
 
 	@Override
 	public Resultado alterar(EntidadeImpl entidade) {
-		// TODO Auto-generated method stub
-		return null;
+		resultado = new Resultado();
+		String nomeClasse = entidade.getClass().getName();
+		
+		String mensagem = executarRegras(entidade, "ALTERAR");
+		
+		if(mensagem == null) {
+			IDAO dao = daos.get(nomeClasse);
+			try {
+				dao.alterar(entidade);
+				List<EntidadeImpl> entidades = new ArrayList<EntidadeImpl>();
+				entidades.add(entidade);
+				resultado.setEntidades(entidades);
+			} catch (SQLException sqlException) {
+				sqlException.printStackTrace();
+				resultado.setMensagem("Não foi possível atualizar o registro!");
+			}
+		} else {
+			resultado.setMensagem(mensagem);
+		}
+		return resultado;
 	}
 
 	@Override
 	public Resultado excluir(EntidadeImpl entidade) {
-		// TODO Auto-generated method stub
-		return null;
+		resultado = new Resultado();
+		String nomeClasse = entidade.getClass().getName();
+		
+		String mensagem = executarRegras(entidade, "EXCLUIR");
+		
+		if(mensagem == null) {
+			IDAO dao = daos.get(nomeClasse);
+			try {
+				dao.excluir(entidade);
+				List<EntidadeImpl> entidades = new ArrayList<EntidadeImpl>();
+				entidades.add(entidade);
+				resultado.setEntidades(entidades);
+			} catch (SQLException sqlException) {
+				sqlException.printStackTrace();
+				resultado.setMensagem("N�o foi poss�vel realizar o registro!");
+			}
+		} else {
+			resultado.setMensagem(mensagem);
+		}
+		return resultado;
 	}
 
 	@Override
