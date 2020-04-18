@@ -1,5 +1,6 @@
 package com.hirashoesusers.impl.DAO;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,6 +11,7 @@ import java.util.List;
 import com.hirashoesusers.dominio.Cliente;
 import com.hirashoesusers.dominio.Endereco;
 import com.hirashoesusers.dominio.EntidadeImpl;
+import com.hirashoesusers.dominio.Telefone;
 
 public class EnderecoDAO extends AbstractJdbcDAO {
 
@@ -22,22 +24,27 @@ public class EnderecoDAO extends AbstractJdbcDAO {
 		try {
 			StringBuilder sql = new StringBuilder();
 
-			sql.append("INSERT INTO enderecos (user_id, cep, rua, numero, bairro, complemento, cidade, estado, pais)");
-			sql.append("VALUES(?,?,?,?,?,?,?,?,?)");
+			sql.append("INSERT INTO enderecos (user_id, cep, rua, numero, bairro, complemento, cidade, estado, pais, created_at, updated_at)");
+			sql.append("VALUES(?,?,?,?,?,?,?,?,?,?,?)");
 
 			pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 
-			pst.setInt(1, cliente.getId());
-			pst.setString(2, cliente.getEnderecos().get(0).getCep());
-			pst.setString(3, cliente.getEnderecos().get(0).getRua());
-			pst.setString(4, cliente.getEnderecos().get(0).getNumero());
-			pst.setString(5, cliente.getEnderecos().get(0).getBairro());
-			pst.setString(6, cliente.getEnderecos().get(0).getComplemento());
-			pst.setString(7, cliente.getEnderecos().get(0).getCidade());
-			pst.setString(8, cliente.getEnderecos().get(0).getEstado());
-			pst.setString(9, cliente.getEnderecos().get(0).getPais());
+			for(int i=0; i<cliente.getEnderecos().size(); i++) {
+				pst.setInt(1, cliente.getId());
+				pst.setString(2, cliente.getEnderecos().get(i).getCep());
+				pst.setString(3, cliente.getEnderecos().get(i).getRua());
+				pst.setString(4, cliente.getEnderecos().get(i).getNumero());
+				pst.setString(5, cliente.getEnderecos().get(i).getBairro());
+				pst.setString(6, cliente.getEnderecos().get(i).getComplemento());
+				pst.setString(7, cliente.getEnderecos().get(i).getCidade());
+				pst.setString(8, cliente.getEnderecos().get(i).getEstado());
+				pst.setString(9, cliente.getEnderecos().get(i).getPais());
+				pst.setDate(10, new Date(0));
+				pst.setDate(11, new Date(0));
 
-			pst.execute();
+
+				pst.execute();
+			}
 
 		} catch (SQLException e) {
 			try {
@@ -160,7 +167,37 @@ public class EnderecoDAO extends AbstractJdbcDAO {
 
 	@Override
 	public EntidadeImpl consultarPorId(EntidadeImpl entidade) throws SQLException {
-		// TODO Auto-generated method stub
+		PreparedStatement pst = null;
+
+		Cliente cliente = (Cliente) entidade;
+		StringBuilder sql = new StringBuilder();
+
+		try {
+			Endereco e = new Endereco();
+			sql.append("SELECT * FROM enderecos WHERE user_id=?");
+			openConnection();
+
+			pst = connection.prepareStatement(sql.toString());
+			pst.setInt(1, cliente.getId());
+
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+				e.setId(rs.getInt("id"));
+				e.setRua(rs.getString("rua"));
+				e.setNumero(rs.getString("numero"));
+				e.setCep(rs.getString("cep"));
+				e.setBairro(rs.getString("bairro"));
+				e.setComplemento(rs.getString("complemento"));
+				e.setCidade(rs.getString("cidade"));
+				e.setEstado(rs.getString("estado"));
+				e.setPais(rs.getString("pais"));
+			}
+			
+			return e;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 

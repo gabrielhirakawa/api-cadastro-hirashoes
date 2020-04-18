@@ -1,13 +1,16 @@
 package com.hirashoesusers.impl.DAO;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.hirashoesusers.dominio.Cliente;
 import com.hirashoesusers.dominio.EntidadeImpl;
+import com.hirashoesusers.dominio.Telefone;
 
 public class TelefoneDAO extends AbstractJdbcDAO {
 
@@ -20,16 +23,21 @@ public class TelefoneDAO extends AbstractJdbcDAO {
 		try {
 			StringBuilder sql = new StringBuilder();
 
-			sql.append("INSERT INTO telefones (user_id, numero)");
-			sql.append("VALUES(?,?)");
+			sql.append("INSERT INTO telefones (user_id, numero, created_at, updated_at)");
+			sql.append("VALUES(?,?,?,?)");
 
 			pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 
-			pst.setInt(1, cliente.getId());
-			pst.setString(2, cliente.getTelefones().get(0).getNumero());
+			for(int i=0; i<cliente.getTelefones().size(); i++) {
+				pst.setInt(1, cliente.getId());
+				pst.setString(2, cliente.getTelefones().get(i).getNumero());
+				pst.setDate(3, new Date(0));
+				pst.setDate(4, new Date(0));
 
-			pst.execute();
 
+				pst.execute();
+			}
+			
 		} catch (SQLException e) {
 			try {
 				connection.rollback();
@@ -108,15 +116,20 @@ public class TelefoneDAO extends AbstractJdbcDAO {
 //            openConnection();
 //            ResultSet rs = pst.executeQuery();
 //            pst = connection.prepareStatement(telSql.toString());
-//            pst.setInt(1, c.getId());
+//            
+//            pst.setInt(1, cliente.getId());
 //            rs = pst.executeQuery();
-//            List<String> phones = new ArrayList<String>();
+//            
+//            List<EntidadeImpl> phones = new ArrayList<EntidadeImpl>();
 //            while (rs.next()) {
-//            	phones.add(rs.getString("numero"));
-//            	
-//            	cliente.setTelefones(phones);
+//            	Telefone t = new Telefone();
+//            	System.out.println("print numero:" + rs.getString("numero"));
+//            	t.setNumero(rs.getString("numero"));
+//            	phones.add(t);
+//                        	
 //            }
-//            return clientes;
+//
+//            return phones;
 //		} catch (SQLException e) {
 //			e.printStackTrace();
 //		}
@@ -125,7 +138,30 @@ public class TelefoneDAO extends AbstractJdbcDAO {
 
 	@Override
 	public EntidadeImpl consultarPorId(EntidadeImpl entidade) throws SQLException {
-		// TODO Auto-generated method stub
+		PreparedStatement pst = null;
+
+		Cliente cliente = (Cliente) entidade;
+		StringBuilder sql = new StringBuilder();
+
+		try {
+			Telefone t = new Telefone();
+			sql.append("SELECT * FROM telefones WHERE user_id=?");
+			openConnection();
+
+			pst = connection.prepareStatement(sql.toString());
+			pst.setInt(1, cliente.getId());
+
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+				t.setId(rs.getInt("id"));
+				t.setNumero(rs.getString("numero"));
+			}
+			
+			return t;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 

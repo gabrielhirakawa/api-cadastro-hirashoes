@@ -8,7 +8,7 @@ public class Conexao {
 
 	public static Connection getConnection() throws ClassNotFoundException, SQLException {
 		String driver = "org.postgresql.Driver";
-		String url = "jdbc:postgresql://localhost:5432/hirashoes";
+		String url = "jdbc:postgresql://localhost:5432/hirashoes2";
 		String user = "postgres";
 		String password = "docker";
 		Class.forName(driver);

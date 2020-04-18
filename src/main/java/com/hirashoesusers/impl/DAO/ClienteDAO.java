@@ -5,12 +5,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.sql.Date;
 import java.util.List;
 
 import org.postgresql.util.PSQLException;
 
 import com.hirashoesusers.dominio.Cliente;
+import com.hirashoesusers.dominio.Endereco;
 import com.hirashoesusers.dominio.EntidadeImpl;
+import com.hirashoesusers.dominio.Telefone;
 
 public class ClienteDAO extends AbstractJdbcDAO {
 
@@ -23,8 +26,8 @@ public class ClienteDAO extends AbstractJdbcDAO {
 		try {
 			StringBuilder sql = new StringBuilder();
 
-			sql.append("INSERT INTO clientes  (nome, sobrenome, cpf, email, status, password)");
-			sql.append("VALUES(?,?,?,?,?,?)");
+			sql.append("INSERT INTO clientes  (nome, sobrenome, cpf, email, status, password, created_at, updated_at)");
+			sql.append("VALUES(?,?,?,?,?,?,?,?)");
 
 			pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 
@@ -34,6 +37,8 @@ public class ClienteDAO extends AbstractJdbcDAO {
 			pst.setString(4, cliente.getEmail());
 			pst.setString(5, cliente.getStatus());
 			pst.setString(6, cliente.getPassword());
+			pst.setDate(7, new Date(0));
+			pst.setDate(8, new Date(0));
 
 			pst.execute();
 
@@ -167,7 +172,7 @@ public class ClienteDAO extends AbstractJdbcDAO {
 			Cliente c = new Cliente();
 			sql.append("SELECT * FROM clientes WHERE id=?");
 			openConnection();
-			
+
 			pst = connection.prepareStatement(sql.toString());
 			pst.setInt(1, cliente.getId());
 
@@ -181,7 +186,25 @@ public class ClienteDAO extends AbstractJdbcDAO {
 				c.setCpf(rs.getString("cpf"));
 				c.setStatus(rs.getString("status"));
 			}
-			System.out.println("logando objeto"+ c.getNome());
+			
+			TelefoneDAO tDAO = new TelefoneDAO();
+			EntidadeImpl t = new Telefone();
+			t = tDAO.consultarPorId(cliente);
+			Telefone tel = (Telefone) t;
+			List<Telefone> telefones = new ArrayList<Telefone>();
+			
+			EnderecoDAO eDAO = new EnderecoDAO();
+			EntidadeImpl e = new Endereco();
+			e = eDAO.consultarPorId(cliente);
+			Endereco end = (Endereco) e;
+			List<Endereco> enderecos = new ArrayList<Endereco>();
+			
+			
+			enderecos.add(end);
+			telefones.add(tel);
+			c.setTelefones(telefones);
+			c.setEnderecos(enderecos);
+
 			return c;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -213,40 +236,19 @@ public class ClienteDAO extends AbstractJdbcDAO {
 				c.setCpf(rs.getString("cpf"));
 				c.setStatus(rs.getString("status"));
 
-//	            telSql.append("SELECT * FROM telefones WHERE user_id = ? ");
-//	            openConnection();
-//	            pst = connection.prepareStatement(telSql.toString());
-//	            pst.setInt(1, c.getId());
-//	            rs = pst.executeQuery();
-//	            List<String> phones = new ArrayList<String>();
-//	            while (rs.next()) {
-//	            	phones.add(rs.getString("numero"));
-//	            }
-//	            
-//	         
-//	            endSql.append("SELECT * FROM enderecos WHERE user_id = ? ");
-//	            openConnection();
-//	            pst = connection.prepareStatement(endSql.toString());
-//	            pst.setInt(1, c.getId());
-//	            rs = pst.executeQuery();
-//	            List<Endereco> enderecos = new ArrayList<Endereco>();
-//	            
-//	            while (rs.next()) {
-//	            	Endereco end = new Endereco();
-//	            	end.setId(rs.getInt("id"));
-//	            	end.setRua(rs.getString("rua"));
-//	            	end.setNumero(rs.getString("numero"));
-//	            	end.setBairro(rs.getString("bairro"));
-//	            	end.setCep(rs.getString("cep"));
-//	            	end.setComplemento(rs.getString("complemento"));
-//	            	end.setCidade(rs.getString("cidade"));
-//	            	end.setEstado(rs.getString("estado"));
-//	            	end.setPais(rs.getString("pais"));
-//	            	enderecos.add(end);
-//	            }
-//	            
-//	            c.setTelefones(phones);
-//	            c.setEnderecos(enderecos);
+//				TelefoneDAO tDAO = new TelefoneDAO();
+//				List<EntidadeImpl> phones = tDAO.consultar(cliente);
+//				List<Telefone> telefones = new ArrayList<Telefone>();
+//				if(phones.size() > 0) {
+//					for(int i=0; i<phones.size(); i++) {
+//						Telefone t = new Telefone();
+//						t = (Telefone) phones.get(i);
+//						telefones.add(t);
+//					}
+//					c.setTelefones(telefones);
+//				}
+//				
+				
 				clientes.add(c);
 			}
 
